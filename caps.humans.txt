@@ -1,0 +1,12 @@
+/* TEAM */
+    the only author: Oxpa
+    Contact: oxpa@jabber.ru
+    From: Moscow, Russia
+
+/* THANKS */
+    all those programmers at programming@conference.jabber.ru
+    guys from python@conference.jabber.ru who helped me with flask
+
+/* SITE */
+    Components: angularjs, twitter bootstrap 3.x, flask, nginx, httpd
+    Software: vim

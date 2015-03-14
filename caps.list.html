@@ -1,0 +1,62 @@
+<div class="row">
+ <div class="col-xs-9 col-xs-offset-1">
+  <div class="row">
+    <div class="col-md-2 pageNum hidden-xs hidden-sm" ng-click="$emit('newPage', page + 1)">
+      <span class="glyphicon glyphicon-chevron-left" ng-class="{disabled: page == pagestotal}" aria-hidden="true"></span>
+    </div>
+    <div class="col-md-8 ">
+      <div class="col-md-12 pageNum header" ng-click="$emit('newPage', pagestotal)">
+        <h1>CAPS — code and post&nbsp;scripts</h1>
+      </div>
+      <div class="col-xs-12 xs-padding visible-xs-block"></div>
+      <div class="col-xs-12">
+        <div class="row">
+          <div class="col-xs-6 col-sm-2 centered">
+            <a ng-click="$emit('newPage', pagestotal)" class="pageNum" ng-class="{selected: page == pagestotal}">Самое новое</a> 
+          </div>
+          <div class="col-xs-6 visible-xs-block centered">
+            <a ng-click="$emit('newPage', 1)" class="pageNum" ng-class="{selected: page == 1}" >Самое старое</a> 
+          </div>
+          <div class="col-xs-12 xs-padding visible-xs-block"></div>
+          <div class="col-xs-12 col-sm-8">
+          <div class="row">
+                
+                <div class="col-xs-1 visible-xs-block" ></div>
+                <b class="col-sm-1 hidden-xs" ng-class="{hidden:(!$first || !(pg < pagestotal))}" ng-repeat-start="pg in [page - 2, page + 2] | to_range">...</b>
+                <!--div class="col-xs-1 visible-lg-block visible-xs-block" ng-show="$first && (! (pg < pagestotal))"></div-->
+                <a class="col-xs-2 col-sm-2 pageNum" ng-class="{invisible: pg > pagestotal || pg < 1, selected: pg == page}" ng-click="$emit('newPage', pg)">{{pg}}</a> 
+                <b class="col-sm-1 hidden-xs" ng-class="{hidden: (!$last || pg < 2)}" ng-repeat-end>...</b>
+          </div>
+          </div>
+          <div class="col-sm-2 hidden-xs centered">
+            <a ng-click="$emit('newPage', 1)" class="pageNum" ng-class="{selected: page == 1}" >Самое старое</a> 
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 hidden-xs hidden-sm pageNum"  ng-click="$emit('newPage', page - 1)">
+      <span class="glyphicon glyphicon-chevron-right" ng-class="{disabled: page == 1}" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-xs-12 col-sm-9 col-sm-offset-1 ">
+    <div class="caps row" ng-repeat="c in show_caps | filter:query" >
+       <div class="ts col-xs-6 col-sm-4 col-md-3 col-lg-2">
+          <a href = "http://chatlogs.jabber.ru/programming@conference.jabber.ru/{{c.date | date:'yyyy/MM/dd\'.html#\'HH:mm:ss.sss':'UTC' }}{{c.us}}">{{c.date | date:'yyyy/MM/dd HH:mm':'UTC' }}</a>
+      </div>
+      <div class="visible-xs-block col-xs-3 col-sm-4"></div>
+      <div class="col-xs-3 col-sm-2 " style="text-align:right;"> + 12333 - </div>
+      <div class="col-xs-6 col-sm-2">
+          {{c.author}}
+      </div> 
+      <div class="col-xs-6 col-sm-4 pull-right yashare" style="display: inline-block;">
+          <div class="pull-right">[<a class="persistent-link" href="/items/{{c.date}}{{c.us}}/"><span class="glyphicon glyphicon-link" aria-hidden='true'></span></a>]</div>
+          <div id='yas{{c.date}}{{c.us}}' class="pull-right" style="display: inline-block; margin-top:-3px;" ng-init="createShare(c)">  </div>
+      </div> 
+    <div class="text col-xs-12" ng-bind-html="c.text | rawHtml"></div>
+  </div>
+ </div>
+</div>

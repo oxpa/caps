@@ -1,0 +1,102 @@
+<html>
+<head>
+<title>читатник конференций</title>
+<!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"-->
+<link rel="stylesheet" href="/caps/css/bootstrap.css">
+<link rel="stylesheet" href="/caps/css/caps.css">
+<base href="/"/>
+<meta name="viewport" content="width=device-width, initial-scale=0.6">
+<meta name="keywords" content="Стихи, логи конференций, программисты, jabber">
+<meta name="twitter:card" content="summary">
+{% if caps['caps']|length > 1 %}
+<meta name="twitter:site" content="@CapsDucks">
+<meta name="twitter:title" content="Лучшая замена жёлтому утёнку since Mon Sep 17 00:00:00 2001">
+<meta name="twitter:description" content="Сборник &quot;стихов&quot;: двух- и более -стиший, набранных капсом в programming@conference.jabber.ru казалось бы вменяемыми людьми">
+{% else %}
+{% if caps['caps'][0].twauthor %}
+<meta name="twitter:site" content="@{{caps['caps'][0].twauthor}}">
+{% else %}
+<meta name="twitter:site" content="@CapsDucks">
+{% endif %}
+<meta name="twitter:title" content="Цитата {{caps['caps'][0].author}} от {{ dt.fromtimestamp(caps['caps'][0].date//1000).strftime("%Y/%m/%d %X")}}">
+<meta name="twitter:description" content="{{caps['caps'][0].text}}">
+{% endif %}
+</head>
+
+<div class="container">
+<div class="row">
+<div class="col-xs-9 col-xs-offset-1">
+<div class="row">
+  <div class="col-md-2 hidden-xs hidden-sm" ng-click="$emit('newPage', page + 1)">
+    <a href="{%if page < caps['pagestotal'] %}http://caps.catfeed.net/{{page + 1}}/10/ {%endif%}">
+    <span class="glyphicon glyphicon-chevron-left" {%if page == caps['pagestotal']%} class='disabled' {%endif%}ng-class="{disabled: page == pagestotal}" aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="col-md-8 ">
+      <div class="col-md-12 pageNum" ng-click="$emit('newPage', pagestotal)">
+        <center><h1>CAPS - code and post scripts</h1></center>
+      </div>
+    <div class="col-md-12 hidden">
+    Поиск на странице: <input ng-model="query">
+    </div>
+    <div class="col-xs-12">
+      <div class="row">
+        <div class="col-md-2 centered">
+          <a ng-click="$emit('newPage', pagestotal)" href="http://caps.catfeed.net/{{caps['pagestotal']}}/10/" ng-class="{selected: page == pagestotal}">Самое новое</a> 
+        </div>
+        <div class="col-xs-8">
+        <div class="row" data="{{caps['pagestotal']}}">
+          {%- for i in range(page+2, page-3, -1) -%}
+              {%- if loop.index == 1 and i < caps['pagestotal'] - 1 -%} 
+              <b class="col-xs-1 hidden-xs hidden-sm" ng-show="($first && pg < pagestotal - 1)" ng-repeat-start="pg in [page - 2, page + 2] | to_range" data="{{i}}">...</b>
+              {%- endif -%}
+              {% if loop.index == 1 and i >= caps['pagestotal'] - 1 -%} 
+              <div class="col-xs-1" ng-show="$first && (! (pg < pagestotal - 1))"></div>
+              {%- endif -%}
+              {% if not ( i > caps['pagestotal'] or i <1) -%} 
+              <a  href="{%if i != page%}http://caps.catfeed.net/{{i}}/10/{%endif%}" class="col-xs-2 {%if i == page%} selected {%endif%}" ng-class="{invisible: pg > pagestotal || pg < 1, selected: pg == page}" ng-click="$emit('newPage', pg)">{{i}}</a> 
+              {%- endif -%}
+              {% if ( i == page - 2 and i > 2) -%} 
+              <b class="col-xs-1 hidden-xs hidden-sm" ng-show="($last && pg > 2)" ng-repeat-end>...</b>
+              {%- endif -%}
+          {%- endfor -%}
+        </div>
+        </div>
+        <div class="col-md-2 centered ">
+          <a href="http://caps.catfeed.net/1/10/" ng-click="$emit('newPage', 1)" ng-class="{selected: page == 1}" >Самое старое</a> 
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2 hidden-xs hidden-sm"  ng-click="$emit('newPage', page - 1)">
+    <a href="{%if page > 1 %}http://caps.catfeed.net/{{page - 1}}/10/{%endif%}">
+    <span class="glyphicon glyphicon-chevron-right" {%if page == 1%} class='disabled' {%endif%} ng-class="{disabled: page == 1}" aria-hidden="true"></span>
+    </a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-9 col-xs-offset-1">
+    {% for c in caps['caps'] %}
+  <div class="caps row" itemscope itemtype="http://schema.org/Article" >
+        <div class="ts col-xs-3">
+            <span itemprop="name" style="visibility:false; display:none;">Цитата {{c.author}} </span>
+            <a itemprop="sameAs" href="http://chatlogs.jabber.ru/programming@conference.jabber.ru/{{ dt.fromtimestamp(c.date//1000).strftime("%Y/%m/%d.html#%X.")}}{{c.date%1000}}{{c.us}}">
+            <span itemprop="datePublished">{{ dt.fromtimestamp(c.date//1000).strftime("%Y/%m/%d %X")}}</span></a>
+        </div>
+        <div class="col-xs-8" itemscope itemtype="http://schema.org/Person" itemprop="author"> <span itemprop="name">{{c.author}}</span>
+        </div> 
+        <div class="pull-right" id="yashare">
+          <div id='yas{{c.date}}{{c.us}}' style="display: inline-block; margin-bottom:1px;" >  </div>
+          <div class="pull-right">[<a class="persistent-link" href="/items/{{c.date}}{{c.us}}"><span class="glyphicon glyphicon-link" aria-hidden='true'></span></a>]</div>
+        </div>
+    <div class="text col-xs-12" itemprop="description" ><span itemprop="articleBody">{{c.text}}</span></div>
+  </div>
+    {% endfor %}
+<hr style="width:70%"/>
+<div style="padding:10px"><center>Создано с целью популяризации в рядах релятивистских python'ов.</center></div>
+  </div>
+</div>
+</div>
+</html>

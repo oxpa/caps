@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>читатник конференций</title>
+<!-- twitter meta tags -->
+<meta name="viewport" content="width=device-width, initial-scale=0.7">
+<meta name="keywords" content="Стихи, логи конференций, программисты, jabber">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@CapsDucks">
+<meta name="twitter:title" content="Лучшая замена жёлтому утёнку since Mon Sep 17 00:00:00 2001">
+<meta name="twitter:description" content="Сборник &quot;стихов&quot;: двух- и более стиший, набранный капсом в programming@conference.jabber.ru вменяемыми, казалось бы, людьми">
+
+<link rel="stylesheet" href="/caps/css/caps.css">
+
+<script async type="text/javascript" src="//yastatic.net/share/share.js" charset="utf-8"></script>
+<base href="/"/>
+<meta name="fragment" content="!"/>
+<script async src="/js/ang.js"></script>
+<script type="text/javascript">
+var capsApp;
+caps = function () {
+console.log('onload');
+if (typeof loaded === 'undefined') {setTimeout(caps, 100); return;};
+capsApp = angular.module('capsApp', ['ngRoute']);
+
+capsApp.config(['$locationProvider',
+    function AppConfig($locationProvider) {
+        $locationProvider.html5Mode(true);
+        $locationProvider.hashPrefix('!');
+}]);
+
+capsApp.filter('to_range', function() {
+        return function(input) {
+            var lowBound, highBound;
+            switch (input.length) {
+            case 1:
+                lowBound = 0;
+                highBound = parseInt(input[0]) - 1;
+                break;
+            case 2:
+                lowBound = parseInt(input[0]);
+                highBound = parseInt(input[1]);
+                break;
+            default:
+                return input;
+            }
+            var result = [];
+            for (var i = lowBound; i <= highBound; i++)
+                result.push(i);
+            result.reverse();
+            return result;
+        };
+});
+
+//user it like $scope.path('controller', {'param':value})
+capsApp.run(function($route, $rootScope){
+  $rootScope.path = function(controller, params) {
+    // Iterate over all available routes
+    for(var path in $route.routes) {
+      var pathController = $route.routes[path].controller;
+      if(pathController == controller) { //Route found
+        var result = path;
+        // Construct the path with given parameters in it
+        for(var param in params) {
+          result = result.replace(':' + param, params[param]);
+        }
+        return result;
+      }
+    }
+    // No such controller in route definitions
+    return undefined;
+  };
+});
+
+capsApp.controller('capsByIdCtrl', function ($scope, $http, $location, $route, $routeParams) {
+    console.log('by id controller');
+    $scope.createShare = createShare;
+    $scope.onlyone = 1;
+    $scope.caps = capsApp.caps || Array();
+    $scope.$on('newPage', function(et, page){
+        if (page > $scope.pagestotal || page < 1){
+            page = $scope.pagestotal;
+        }
+        $location.path('/'+page+'/10/');
+    });
+    $scope.refresh = function() {
+        var url = 'data/items/' + $routeParams.cid + '/';
+        //console.log('url is ', url);
+        $http.get(url).success(function(data) {
+            if (data.caps) {
+                capsApp.clear_shares();
+                $scope.show_caps = data.caps;
+                $scope.pagestotal = data.pagestotal;
+                capsApp.pagestotal = data.pagestotal;
+                $scope.page = $scope.pagestotal;
+            }
+        })
+    }
+
+    $scope.refresh();
+    if ($scope.caps[$scope.page]) {
+        capsApp.clear_shares();
+        $scope.show_caps = $scope.caps[$scope.page].filter(function(el, ind, arr){return el.date == $routeParams.cid});
+    }
+    
+    
+});
+capsApp.controller('capsListCtrl', function ($scope, $http, $location, $route, $routeParams) {
+    $scope.refresh = function() {capsApp.refresh($scope, $http, $location, $route, $routeParams)};
+    $scope.createShare = createShare;
+    $scope.pagestotal = $scope.pagestotal || capsApp.pagestotal || 0;
+    $scope.caps = capsApp.caps || Array();
+    $scope.page = parseInt($routeParams.page);
+    $scope.pagesize = parseInt($routeParams.pagesize) ;
+    if (capsApp.prevpage && ! $scope.caps[$scope.page]){
+        //console.log('showing old page');
+        capsApp.clear_shares();
+        $scope.show_caps = $scope.caps[capsApp.prevpage];
+    };
+
+    console.log('showing page ', $scope.page, ', with size ', $scope.pagesize, ', total pages:', $scope.pagestotal);
+
+    $scope.$on('newPage', function(et, page){
+            console.log('setting page ' + page);
+            if ( parseInt(page) < 1 || parseInt(page) > parseInt($scope.pagestotal)){
+                page = $scope.pagestotal;
+            };
+            console.log('setting page to ', page, ' on click event. ');
+            capsApp.prevpage = $scope.page;
+            if ($routeParams.cid) {
+                $location.path('/'+page+'/'+$scope.pagesize) 
+            } else { 
+                $route.updateParams({'page':page});
+                //$location.path('/'+ page);
+            };
+    });
+
+
+
+    if ( $scope.caps.length == 0 || ! $scope.caps[$scope.page] || $scope.caps[$scope.page].length == 0) {
+        //console.log ('root refresh');
+        $scope.refresh();
+    }else{
+        capsApp.clear_shares();
+        if ($routeParams.cid){
+            $scope.show_caps = $scope.caps[$scope.page].filter(function(el, ind, arr){return el.date == $routeParams.cid});
+        }else{
+            //console.log($scope.page, $scope.caps);
+            $scope.show_caps = $scope.caps[$scope.page];
+        };
+    };
+
+});
+
+capsApp.config(['$routeProvider', function ($routeProvider){
+        $routeProvider.
+            when('/items/:cid',{templateUrl: 'caps.list.html', controller: 'capsByIdCtrl'}).
+            when('/:page?',{templateUrl: 'caps.list.html', controller: 'capsListCtrl'}).
+            when('/:page?/:pagesize?',{templateUrl: 'caps.list.html', controller: 'capsListCtrl'}).
+            otherwise({templateUrl: 'caps.list.html', controller: 'capsListCtrl'});
+            //otherwise({redirectTo: '/'});
+    }
+]);
+
+capsApp.clear_shares = function (classname) {
+    classname = classname || 'b-share-popup-wrap';
+    var elements = document.getElementsByClassName(classname); 
+    while (elements.length > 0){
+        elements[0].parentNode.removeChild(elements[0]);
+    }
+}
+
+capsApp.refresh = function($scope, $http, $location, $route, $routeParams) {
+        var url = 'data/';
+        url += $scope.page? $scope.page + '/': "";
+        url += $scope.pagesize ? $scope.pagesize + '/' : $scope.page?'10':""; 
+        //console.log('url is ', url);
+        if (! ($scope.caps[$scope.page])) {
+            $http.get(url).success(function(data) {
+                if (data.caps) {
+                    if (data.caps.length > 0) {
+                        if ($scope.page == parseInt($scope.page)) {
+                            $scope.caps[$scope.page] = data.caps;
+                        } else {
+                            $scope.caps[data.pagestotal] = data.caps;
+                        };
+                        capsApp.caps = $scope.caps;
+                        $scope.pagestotal = data.pagestotal;
+                        capsApp.pagestotal = data.pagestotal;
+                        if (! $scope.page) {
+                            console.log('adding page to path');
+                            $location.path($location.path()+data.pagestotal);
+                            $scope.page = data.pagestotal;
+                        };
+                        if (! $scope.pagesize) {
+                            console.log('adding pagesize to url');
+                            $location.path($location.path()+'/10/'); return;
+                        };
+                        capsApp.clear_shares();
+
+                        if ($routeParams.cid) {
+                            $scope.show_caps = $scope.caps[$scope.page].filter(function(el, ind, arr){return el.date == $routeParams.cid});
+                        }else{
+                            $scope.show_caps = $scope.caps[$scope.page];
+                        };
+                        //console.log('got page from server: ', $scope.page, ' size ', $scope.pagesize, 'total ', $scope.pagestotal);
+                    } else {
+                        //console.log('page will we "total":', data.pagestotal);
+                        $scope.page = data.pagestotal;
+                    };
+                    console.log('setting page to ', $scope.page);
+                    $route.updateParams({'page':$scope.page, 'pagesize':$scope.pagesize});
+                    console.log('set page to ', $scope.page);
+                }
+            });
+        }; 
+    };
+
+capsApp.filter('rawHtml', ['$sce', function($sce){
+    return function(val) {
+        return $sce.trustAsHtml(val);
+    };
+}]);
+
+
+var shares = Array ();
+
+function createShare(id) {setTimeout( function() {
+        // создаем блок
+        //console.log('creating block , );
+        var YaShareInstance = new Ya.share({
+            element: 'yas'+id.date+id.us,
+            elementStyle: {type:'link', quickServices:['','']},
+            link: window.location.protocol + '//' + window.location.host + '/items/'+ id.date + id.us,
+            title: "Цитата "+id.author+" в погроминге:",
+            description: id.author + " когда-то написал в programming@c.j.r: \n\n" + id.text.replace(/<br\/>/g,'\n'), 
+        });
+}, 300)};
+angular.bootstrap(document, ["capsApp"]);
+}; //window.onload
+    </script> 
+</head>
+
+<body>
+
+
+<div class="container" ng-view></div>
+<div class="col-xs-9 col-xs-offset-1">
+ <hr style="width:70%;"/>
+ <div style="padding:10px;"><center>Создано с целью популяризации в рядах релятивистских python'ов. &nbsp;&nbsp;
+<!-- Yandex.Metrika informer -->
+<a href="https://metrika.yandex.ru/stat/?id=27931506&amp;from=informer"
+target="_blank" rel="nofollow"><img src="//bs.yandex.ru/informer/27931506/1_0_FFFFFFFF_FFFFFFFF_0_pageviews"
+style="width:80px; height:15px; border:0;" alt="" title="данные за сегодня (просмотры)" onclick="try{Ya.Metrika.informer({i:this,id:27931506,lang:'ru'});return false}catch(e){}"/></a>
+<!-- /Yandex.Metrika informer -->
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+(function (d, w, c) {
+    (w[c] = w[c] || []).push(function() {
+        try {
+            w.yaCounter27931506 = new Ya.Metrika({id:27931506, trackHash:true});
+        } catch(e) { }
+    });
+
+    var n = d.getElementsByTagName("script")[0],
+        s = d.createElement("script"),
+        f = function () { n.parentNode.insertBefore(s, n); };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f, false);
+    } else { f(); }
+})(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/27931506" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+<script type="text/javascript" >caps();</script>
+  </center>
+ </div>
+</div>
+</body>
+</html>
