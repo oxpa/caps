@@ -269,6 +269,7 @@ function createShare(id) {setTimeout( function() {
             link: window.location.protocol + '//' + window.location.host + '/items/'+ id.date + id.us,
             title: "Цитата "+id.author+" в погроминге:",
             description: id.author + " когда-то написал в programming@c.j.r: \n\n" + id.text.replace(/<br\/>/g,'\n'), 
+            serviceSpecific: {twitter: {title:"Цитата @"+id.twauthor||id.author+" в погроминге:"}},
         });
 }, 300)};
 angular.bootstrap(document, ["capsApp"]);

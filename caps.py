@@ -12,8 +12,8 @@ from flask import json, redirect, url_for, jsonify, Response, request, render_te
 
 from flask import Flask
 app = Flask(__name__)
-app.debug=True
-#app.debug=False
+#app.debug=True
+app.debug=False
 import logging
 log=app.logger
 
@@ -44,7 +44,7 @@ def record_vote(ua='', ip='', cdate='', vote='', db='caps', host='localhost', us
 def get_caps(page=None, page_size=10, db='caps', host='localhost', user='caps', pwd='caps', cf_id = 1):
     db=MySQLdb.connect(host=host, user=user, passwd=pwd, db=db, use_unicode=True, charset='utf8')
     c=db.cursor()
-    stmt = "select caps_date, caps_author, caps_text, caps_votes from caps where caps_conference = %s order by caps_date asc limit %s, %s"
+    stmt = "select caps_date, caps_author, caps_text, caps_votes, twitter_nick from caps left join authors on caps_author = authors_nick left join twitter on author_real_id = authors_real_id where caps_conference = %s order by caps_date asc limit %s, %s"
     pre_stmt = "select cstats_totalcaps div %s, cstats_totalcaps mod %s + %s from confstats where cstats_confid = %s"
     c.execute(pre_stmt,(page_size, page_size, page_size, cf_id))
     log.debug(pre_stmt, page_size, page_size, page_size, cf_id)
@@ -59,7 +59,7 @@ def get_caps(page=None, page_size=10, db='caps', host='localhost', user='caps', 
     log.debug("limit start is %s, limit size is %s", limit_start, limit_size)
 
     c.execute(stmt, (cf_id, limit_start, limit_size))
-    rval = [ {'date':i[0]/1000, 'us': ('%03d'%(i[0]%1000)).rstrip('0') ,  'author':i[1], 'text':i[2].replace('\n', '<br/>'), 'votes':i[3]} for i in c.fetchall() ]
+    rval = [ {'date':i[0]/1000, 'us': ('%03d'%(i[0]%1000)).rstrip('0') ,  'author':i[1], 'text':i[2].replace('\n', '<br/>'), 'votes':i[3], 'twauthor':i[4]} for i in c.fetchall() ]
     rval.reverse()
     return {'pagestotal':total_pages, 'caps':rval }
 

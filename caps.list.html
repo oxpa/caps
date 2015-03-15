@@ -56,9 +56,9 @@
       <div class="col-xs-6 col-sm-2">
           {{c.author}}
       </div> 
-      <div class="col-xs-6 col-sm-4 pull-right yashare" style="display: inline-block;">
+      <div class="col-xs-6 col-sm-4 pull-right yashare" >
           <div class="pull-right">[<a class="persistent-link" href="/items/{{c.date}}{{c.us}}/"><span class="glyphicon glyphicon-link" aria-hidden='true'></span></a>]</div>
-          <div id='yas{{c.date}}{{c.us}}' class="pull-right" style="display: inline-block; margin-top:-3px;" ng-init="createShare(c)">  </div>
+          <div id='yas{{c.date}}{{c.us}}' class="pull-right yash" ng-init="createShare(c)">  </div>
       </div> 
     <div class="text col-xs-12" ng-bind-html="c.text | rawHtml"></div>
   </div>
