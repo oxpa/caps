@@ -77,6 +77,7 @@ capsApp.controller('capsByIdCtrl', function ($scope, $http, $location, $route, $
     $scope.createShare = createShare;
     $scope.onlyone = 1;
     $scope.caps = capsApp.caps || Array();
+    $scope.$on('vote', function(ev, cd, cu, cv){vote(ev,cd,cu,cv,$scope, $http)});
     $scope.$on('newPage', function(et, page){
         if (page > $scope.pagestotal || page < 1){
             page = $scope.pagestotal;
@@ -105,6 +106,39 @@ capsApp.controller('capsByIdCtrl', function ($scope, $http, $location, $route, $
     
     
 });
+function setv($scope, cdate, cus, sv) {
+    for (i in $scope.show_caps) {
+        c = $scope.show_caps[i];
+        if ((c.date == cdate) && (c.us == cus)) {
+            c.votes = sv;
+        }
+    }
+};
+function vote (ev, cdate, cus, cvote, $scope, $http){
+    var url = '/vote/'+cdate+cus+'/';
+    for (i in $scope.show_caps) {
+        c = $scope.show_caps[i];
+        if ((c.date == cdate) && (c.us == cus)){
+            if (c.votes == parseInt(c.votes)) {
+                $http.post(url,{vote:cvote})
+                .success(function(data, status, headers, config) {
+                    setv($scope,cdate,cus,'^_^');
+                })
+                .error(function(data, st, headers, config){
+                    if (st != 418) {
+                        console.log('Server response has status ' + st + '. It seems to be bad. Try again later, please.');
+                        setv($scope,cdate,cus,' :( ');
+                    } else {
+                        setv($scope,cdate,cus,'T_T');
+                    }
+                });
+            } else {
+                setv($scope,cdate,cus,' :P ');
+                console.log(c.votes,'is not equal to', parseInt(c.votes));
+            };
+        } 
+    }
+};
 capsApp.controller('capsListCtrl', function ($scope, $http, $location, $route, $routeParams) {
     $scope.refresh = function() {capsApp.refresh($scope, $http, $location, $route, $routeParams)};
     $scope.createShare = createShare;
@@ -120,6 +154,7 @@ capsApp.controller('capsListCtrl', function ($scope, $http, $location, $route, $
 
     console.log('showing page ', $scope.page, ', with size ', $scope.pagesize, ', total pages:', $scope.pagestotal);
 
+    $scope.$on('vote', function(ev, cd, cu, cv){vote(ev,cd,cu,cv,$scope,$http)});
     $scope.$on('newPage', function(et, page){
             console.log('setting page ' + page);
             if ( parseInt(page) < 1 || parseInt(page) > parseInt($scope.pagestotal)){
@@ -247,7 +282,7 @@ angular.bootstrap(document, ["capsApp"]);
 <div class="container" ng-view></div>
 <div class="col-xs-9 col-xs-offset-1">
  <hr style="width:70%;"/>
- <div style="padding:10px;"><center>Создано с целью популяризации в рядах релятивистских python'ов. &nbsp;&nbsp;
+ <div style="padding:10px;"><center>Создано с целью популяризации в рядах релятивистских python'ов. <a href="https://github.com/oxpa/caps">Код</a> &nbsp;&nbsp;
 <!-- Yandex.Metrika informer -->
 <a href="https://metrika.yandex.ru/stat/?id=27931506&amp;from=informer"
 target="_blank" rel="nofollow"><img src="//bs.yandex.ru/informer/27931506/1_0_FFFFFFFF_FFFFFFFF_0_pageviews"

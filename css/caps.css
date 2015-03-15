@@ -15,6 +15,9 @@
     font-size: 10em;
     left: -13px;
 }
+.vote {
+    cursor: pointer;
+}
 .pageNum {
     margin-left: -2;
     cursor: pointer;
@@ -43,7 +46,7 @@ a {
   width: 100%;
 }
 
-@font-face {  font-family: 'Glyphicons Halflings';  src: url('css/css/fonts/glyphicons-halflings-regular.eot');  src: url('css/css/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('css/css/fonts/glyphicons-halflings-regular.woff') format('woff'), url('css/css/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('css/css/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');}
+/*@font-face {  font-family: 'Glyphicons Halflings';  src: url('css/css/fonts/glyphicons-halflings-regular.eot');  src: url('css/css/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('css/css/fonts/glyphicons-halflings-regular.woff') format('woff'), url('css/css/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('css/css/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');}*/
 /*!
  * Bootstrap v3.3.1 (http://getbootstrap.com)
  * Copyright 2011-2014 Twitter, Inc.

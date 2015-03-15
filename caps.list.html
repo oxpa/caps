@@ -48,7 +48,11 @@
           <a href = "http://chatlogs.jabber.ru/programming@conference.jabber.ru/{{c.date | date:'yyyy/MM/dd\'.html#\'HH:mm:ss.sss':'UTC' }}{{c.us}}">{{c.date | date:'yyyy/MM/dd HH:mm':'UTC' }}</a>
       </div>
       <div class="visible-xs-block col-xs-3 col-sm-4"></div>
-      <div class="col-xs-3 col-sm-2 " style="text-align:right;"> + 12333 - </div>
+      <div class="col-xs-3 col-sm-2 voting" style="text-align:right;"> 
+        <a ng-click="$emit('vote', c.date, c.us, 1)" class="vote" ><span class="glyphicon glyphicon-plus"></span></a>
+        {{c.votes}} 
+        <a ng-click="$emit('vote', c.date, c.us, -1)" class="vote"><span class="glyphicon glyphicon-minus"></a>
+      </div>
       <div class="col-xs-6 col-sm-2">
           {{c.author}}
       </div> 

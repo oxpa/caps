@@ -2,7 +2,6 @@
 <head>
 <title>читатник конференций</title>
 <!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"-->
-<link rel="stylesheet" href="/caps/css/bootstrap.css">
 <link rel="stylesheet" href="/caps/css/caps.css">
 <base href="/"/>
 <meta name="viewport" content="width=device-width, initial-scale=0.6">
@@ -80,16 +79,21 @@
   <div class="col-xs-9 col-xs-offset-1">
     {% for c in caps['caps'] %}
   <div class="caps row" itemscope itemtype="http://schema.org/Article" >
-        <div class="ts col-xs-3">
+        <div class="ts col-xs-6 col-sm-4 col-md-3 col-lg-2">
             <span itemprop="name" style="visibility:false; display:none;">Цитата {{c.author}} </span>
             <a itemprop="sameAs" href="http://chatlogs.jabber.ru/programming@conference.jabber.ru/{{ dt.fromtimestamp(c.date//1000).strftime("%Y/%m/%d.html#%X.")}}{{c.date%1000}}{{c.us}}">
-            <span itemprop="datePublished">{{ dt.fromtimestamp(c.date//1000).strftime("%Y/%m/%d %X")}}</span></a>
+            <span itemprop="datePublished">{{ dt.fromtimestamp(c.date//1000).strftime("%Y-%m-%dT%X")}}</span></a>
         </div>
-        <div class="col-xs-8" itemscope itemtype="http://schema.org/Person" itemprop="author"> <span itemprop="name">{{c.author}}</span>
+      <div class="col-xs-3 col-sm-2 voting" style="text-align:right;">
+        <a ng-click="$emit('vote', c.date, c.us, 1)" class="vote" ><span class="glyphicon glyphicon-plus"></span></a>
+        {{c.votes}}
+        <a ng-click="$emit('vote', c.date, c.us, -1)" class="vote"><span class="glyphicon glyphicon-minus"></a>
+      </div>
+        <div class="col-xs-6 col-sm-2" itemscope itemtype="http://schema.org/Person" itemprop="author"> <span itemprop="name">{{c.author}}</span>
         </div> 
         <div class="pull-right" id="yashare">
           <div id='yas{{c.date}}{{c.us}}' style="display: inline-block; margin-bottom:1px;" >  </div>
-          <div class="pull-right">[<a class="persistent-link" href="/items/{{c.date}}{{c.us}}"><span class="glyphicon glyphicon-link" aria-hidden='true'></span></a>]</div>
+          <div class="pull-right">[<a class="persistent-link" href="/items/{{c.date}}{{c.us}}/"><span class="glyphicon glyphicon-link" aria-hidden='true'></span></a>]</div>
         </div>
     <div class="text col-xs-12" itemprop="description" ><span itemprop="articleBody">{{c.text}}</span></div>
   </div>
