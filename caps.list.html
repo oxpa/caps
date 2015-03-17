@@ -43,9 +43,11 @@
   
   <div class="row">
     <div class="col-xs-12 col-sm-9 col-sm-offset-1 ">
-    <div class="caps row" ng-repeat="c in show_caps | filter:query" >
+    <div class="caps row" itemscope itemtype="http://schema.org/Article" ng-repeat="c in show_caps | filter:query" >
+       <span itemprop="name" style="visibility:false; display:none;">Цитата {{c.author}} </span>
        <div class="ts col-xs-6 col-sm-4 col-md-3 col-lg-2">
-          <a href = "http://chatlogs.jabber.ru/programming@conference.jabber.ru/{{c.date | date:'yyyy/MM/dd\'.html#\'HH:mm:ss.sss':'UTC' }}{{c.us}}">{{c.date | date:'yyyy/MM/dd HH:mm':'UTC' }}</a>
+          <a itemprop="sameAs" href="http://chatlogs.jabber.ru/programming@conference.jabber.ru/{{c.date | date:'yyyy/MM/dd\'.html#\'HH:mm:ss.sss':'UTC' }}{{c.us}}">{{c.date | date:'yyyy/MM/dd HH:mm':'UTC' }}</a>
+            <span style="visibility:false; display:none;" itemprop="datePublished">{{ c.date | date:'yyyy-MM-dd\'T\'HH:mm':'UTC'}}</span></a>
       </div>
       <div class="visible-xs-block col-xs-3 col-sm-4"></div>
       <div class="col-xs-3 col-sm-2 voting" style="text-align:right;"> 
@@ -53,14 +55,14 @@
         {{c.votes}} 
         <a ng-click="$emit('vote', c.date, c.us, -1)" class="vote"><span class="glyphicon glyphicon-minus"></a>
       </div>
-      <div class="col-xs-6 col-sm-2">
-          {{c.author}}
+      <div class="col-xs-6 col-sm-2" itemscope itemtype="http://schema.org/Person" itemprop="author">
+          <span itemprop="name">{{c.author}}</span>
       </div> 
       <div class="col-xs-6 col-sm-4 pull-right yashare" >
           <div class="pull-right">[<a class="persistent-link" href="/items/{{c.date}}{{c.us}}/"><span class="glyphicon glyphicon-link" aria-hidden='true'></span></a>]</div>
           <div id='yas{{c.date}}{{c.us}}' class="pull-right yash" ng-init="createShare(c)">  </div>
       </div> 
-    <div class="text col-xs-12" ng-bind-html="c.text | rawHtml"></div>
+    <div class="text col-xs-12" itemprop="description"> <span itemprop="articleBody" ng-bind-html="c.text | rawHtml"></span></div>
   </div>
  </div>
 </div>
