@@ -12,8 +12,8 @@ from flask import json, redirect, url_for, jsonify, Response, request, render_te
 
 from flask import Flask
 app = Flask(__name__)
-#app.debug=True
 app.debug=False
+#app.debug=True
 import logging
 log=app.logger
 
@@ -29,6 +29,7 @@ def record_vote(ua='', ip='', cdate='', vote='', db='caps', host='localhost', us
         db=MySQLdb.connect(host=host, user=user, passwd=pwd, db=db, use_unicode=True, charset='utf8')
         c=db.cursor()
         stored_ua = hashlib.sha512(ua).hexdigest() 
+        cdate = ('%s'%cdate).ljust(16,'0')
         log.debug('voting with : hash %s, date %s, ip %s, count %s', stored_ua, cdate, ip, vote)
         stmt_log = """insert into votes (votes_uahash, votes_capsdate, votes_ip, votes_count) 
                                 values (%s, %s, %s, %s) 
@@ -38,8 +39,10 @@ def record_vote(ua='', ip='', cdate='', vote='', db='caps', host='localhost', us
         stmt_update = 'update caps set caps_votes = caps_votes + %s where caps_date = %s'
         res = c.execute(stmt_update,(vote, cdate))
         db.commit()
+        c.close()
+        db.close()
     except Exception as e:
-        log.warning('an exception occured from ip %s, voting using %s, for caps %s ,vote %s : %s', ip, ua, cdate, vote, e)
+        log.error('an exception occured from ip %s, voting using %s, for caps %s ,vote %s : %s', ip, ua, cdate, vote, e)
  
 def get_caps(page=None, page_size=10, db='caps', host='localhost', user='caps', pwd='caps', cf_id = 1):
     db=MySQLdb.connect(host=host, user=user, passwd=pwd, db=db, use_unicode=True, charset='utf8')
