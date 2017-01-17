@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime,date,timedelta
 import time
 import logging as log
-#log.root.setLevel(log.DEBUG)
 
 import sys
 import argparse
@@ -24,29 +23,48 @@ def getCapsByDate(date, args):
     caps=[]
 
     while elem:
+        # just 'is a timestamp' condition
         if hasattr(elem,'name') and elem.name == 'a' \
-        and hasattr(elem, 'attrs') and \
-        ( 'name' in elem.attrs and 'id' in elem.attrs and elem.attrs['name'] == elem.attrs['id'] ):
+            and hasattr(elem, 'attrs') \
+            and'name' in elem.attrs and 'id' in elem.attrs \
+            and elem.attrs['name'] == elem.attrs['id']:
+
+            # if there is a phrase parsed out - remember it
             if phrase.isupper() and phrase.count('\n') >1:
                 caps.append({'time':time, 'author':author, 'phrase':phrase})
-                #log.debug("TIME: ", time, "AUTHOR: ",  author, "PHRASE: ", phrase.strip())
+                log.debug("TIME: %s, AUTHOR: %s, PHRASE: %s", time,  author, phrase.strip())
+
             phrase = ''
+            # remeber new timestamp
             # transform a string like '10:40:00.545496' into an integer time:
             dtime = datetime.strptime(date + elem.attrs['id'], '%Y/%m/%d%X.%f')
             time = dtime.strftime('%s') + dtime.strftime('%f')
     
         else:
+            # not a timestamp, try getting CAPS out of elements before next timestamp occur
             if hasattr(elem,'name') and elem.name == 'font' and 'class' in elem.attrs and 'mn' in elem.attrs['class']:
                 author = elem.text[1:-1]
             elif hasattr(elem,'name') and elem.name == 'br':
-                phrase = phrase + '\n'
+                # don't add \n in front of a phrase
+                if phrase != '':
+                    phrase = phrase + '\n'
             elif hasattr(elem,'text'):
-                phrase = phrase + elem.text
+                phrase = phrase + elem.text.replace('|','\n')
             elif elem == '\n' or elem == '\r':
                 pass
             else: 
-                phrase = phrase + elem
+                # skip nicks in front of a CAPS
+                if phrase == '' and elem.strip(' \n\r\t').endswith(':') and elem.islower():
+                    log.debug('skipping an element "%s"', elem)
+                    pass
+                # don't add spaces in front of a phrase
+                elif not (elem.isspace() and phrase == ''):
+                    phrase = phrase + elem.replace('|', '\n')
         elem = elem.next_sibling
+
+    if phrase.isupper() and phrase.count('\n') >1:
+        caps.append({'time':time, 'author':author, 'phrase':phrase})
+        log.debug("TIME: %s, AUTHOR: %s, PHRASE: %s", time,  author, phrase.strip())
     
     log.debug('%s previously: %s caps, found %s caps'%(date, getCapsByDate.counter, len(caps)))
     getCapsByDate.counter += len(caps)
@@ -93,6 +111,9 @@ def store_caps(args):
             log.debug('getting for %s', d)
             #from time import sleep; sleep(1)
             for i in getCapsByDate(d, args):
+                if args.do_nothing:
+                    log.info("Would store %s", i)
+                    continue
                 try:
                     cursor.execute(insert_caps_stmt, (i.get('time'), i.get('author').encode('utf-8'), i.get('phrase').strip().encode('utf-8'), cf_id))
                 except Exception as e:
@@ -163,6 +184,8 @@ if __name__ == '__main__':
     parser.add_argument('--port', help="database server port", default="3306")
     parser.add_argument('--user', help="database server user", default="caps")
     parser.add_argument('--password', help="database server password", default="caps")
+    parser.add_argument('--do-nothing', help="Don't store anything. Just fetch, parse and show", action="store_true")
+    parser.add_argument('--debug', help="Add some extensive logging", action="store_true")
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--date', '-d', help="parse specific date.Format is: '%%Y/%%m/%%d' (as in a url)", action="append")
@@ -175,6 +198,9 @@ if __name__ == '__main__':
     if 'help' in args:
         parser.print_help()
     else:
+        if 'debug' in args and args.debug:
+            log.root.setLevel(log.DEBUG)
+        
         log.debug(args) 
         store_caps(args)
 
