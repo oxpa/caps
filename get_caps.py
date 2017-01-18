@@ -54,7 +54,7 @@ def getCapsByDate(date, args):
                 pass
             else: 
                 # skip nicks in front of a CAPS
-                if phrase == '' and elem.strip(' \n\r\t').endswith(':') and elem.islower():
+                if phrase == '' and elem.strip(' \n\r\t').endswith(':') and not elem.isupper():
                     log.debug('skipping an element "%s"', elem)
                     pass
                 # don't add spaces in front of a phrase
